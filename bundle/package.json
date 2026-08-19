@@ -1,0 +1,28 @@
+{
+  "name": "@sy008/dsh-visual-aid-bundle",
+  "description": "Thin dsh bundle that installs the visual-aid host and web client together",
+  "version": "0.1.0-rc.5",
+  "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shenyan-008/dsh-visual-aid.git",
+    "directory": "bundle"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@sy008/dsh-client-ui-visual-aid": "^0.1.0-rc.5",
+    "@sy008/dsh-visual-aid": "^0.1.0-rc.5"
+  },
+  "files": [
+    "cordis.patch.yml"
+  ]
+}
