@@ -1,7 +1,7 @@
 {
   "name": "@sy008/dsh-client-ui-visual-aid",
   "description": "Visual-aid browser surfaces: settings section, session switch, and vision conversation panel",
-  "version": "0.1.0-rc.8",
+  "version": "0.1.0-rc.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shenyan-008/dsh-visual-aid.git",

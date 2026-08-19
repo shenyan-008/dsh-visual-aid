@@ -72,7 +72,7 @@ packages/visual-aid/
 发布到 npm 后，可以通过 bundle 安装到 dsh profile：
 
 ```bash
-dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.8
+dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.9
 ```
 
 本地开发时，可以打包后安装：
@@ -106,7 +106,7 @@ dsh plugin --profile web add file:/path/to/dsh-visual-aid-bundle
 从 npm 发布后安装：
 
 ```bash
-dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.8
+dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.9
 ```
 
 使用本地 bundle 安装：

@@ -132,7 +132,7 @@ dsh plugin --profile web add file:/path/to/bundle
 - Host 和 client 包均已实现并有测试覆盖。
 - 分支继承已实现，并有回归测试。
 - 已验证本地打包 + profile 安装。
-- 已发布到公共 npm registry：`@sy008/dsh-visual-aid`、`@sy008/dsh-client-ui-visual-aid`、`@sy008/dsh-visual-aid-bundle`，当前版本 `0.1.0-rc.8`。
+- 已发布到公共 npm registry：`@sy008/dsh-visual-aid`、`@sy008/dsh-client-ui-visual-aid`、`@sy008/dsh-visual-aid-bundle`，当前版本 `0.1.0-rc.9`。
 
 ## 发布前检查
 
@@ -214,6 +214,15 @@ grep -o "@sy008/dsh-client-ui-visual-aid\|@deepseek-ai/dsh-client-ui-visual-aid"
 # 解压检查
 for tgz in /tmp/check/*.tgz; do tar -tzf "$tgz" | grep -E '\.map$|tsbuildinfo|node_modules|\.env|@deepseek-ai' && echo "FAIL $tgz" || echo "OK $tgz"; done
 ```
+
+### 10. 禁止泄漏本地绝对路径
+- 发布前必须执行：
+  ```bash
+  grep -RIn "/home/" client-ui-visual-aid/lib visual-aid/lib || echo clean
+  grep -RIn "/Users/" client-ui-visual-aid/lib visual-aid/lib || echo clean
+  ```
+- 发现 `/home/sy/deepseek-harness/...` 等路径必须清理后再发布。
+- 踩坑：rc.8 的 `client.js` 包含 `//#region \0dsh-css:/home/sy/...`，导致内部路径泄漏。
 
 ### 9. 发布顺序
 1. `git add -A && git commit && git tag v<新版本>`
