@@ -142,3 +142,83 @@ dsh plugin --profile web add file:/path/to/bundle
 - [ ] 用打包 tarball 在干净 profile 中验证安装。
 - [ ] 确认 `README.md` 中的安装命令与发布后的真实包名一致。
 - [ ] 确认 LICENSE 与 deepseek-harness 一致（MIT）。
+
+
+## 发布前强制检查（踩坑记录，必须逐项通过）
+
+> 以下每一项都曾经导致过线上事故，发布前必须执行。
+
+### 1. 包名必须是 @sy008
+- `visual-aid/package.json` → `@sy008/dsh-visual-aid`
+- `client-ui-visual-aid/package.json` → `@sy008/dsh-client-ui-visual-aid`
+- `bundle/package.json` → `@sy008/dsh-visual-aid-bundle`
+- 不得出现 `@deepseek-ai/dsh-visual-aid` 作为发布包名。
+
+### 2. 版本号必须递增
+- 三个 `package.json` 的 `version` 必须一致且是**新版本**（已发布版本不能覆盖）。
+- `bundle/package.json` 的 dependencies 必须指向**同版本** `@sy008/*`。
+
+### 3. cordis.patch.yml 必须指向 @sy008
+- `bundle/cordis.patch.yml`
+- `visual-aid/cordis.patch.yml`
+- 两处都必须写：
+  ```yaml
+  name: '@sy008/dsh-visual-aid'
+  name: '@sy008/dsh-client-ui-visual-aid'
+  ```
+- 踩坑：rc.6 这里写成 `@deepseek-ai`，导致 Windows 启动 `Cannot find package '@deepseek-ai/dsh-visual-aid'`。
+
+### 4. client bundle ID 必须与包名一致
+- `client-ui-visual-aid/tsdown.config.ts` 必须写：
+  ```ts
+  clientBundle('@sy008/dsh-client-ui-visual-aid', ...)
+  ```
+- 重新构建后必须检查 `lib/client.js` 里出现 `@sy008/dsh-client-ui-visual-aid`，且**不出现** `@deepseek-ai/dsh-client-ui-visual-aid`。
+- 踩坑：rc.7 这里还是 `@deepseek-ai`，导致浏览器加载报 `loaded without registering "@sy008/dsh-client-ui-visual-aid"`。
+
+### 5. 不允许发布的文件
+- 不得有 `node_modules/`
+- 不得有 `*.map`
+- 不得有 `*.tsbuildinfo`
+- 不得有 `.env`、密钥、token
+- 用 `npm pack` 实际解压检查 tarball 内容。
+
+### 6. 文档版本必须同步
+- `README.md`、`AGENTS.md`、`bundle/README.md`、`visual-aid/README.md`、`client-ui-visual-aid/README.md`、`visual-aid/AGENTS.md`
+- 安装命令必须写 `@sy008/dsh-visual-aid-bundle@<新版本>`。
+- 不得残留旧版本号（如 rc.6 / rc.7）。
+
+### 7. 功能修复必须在构建产物中
+- host `visual-aid/lib/index.js` 必须包含关闭检查：
+  ```js
+  if (!this.enabledFor(session)) return;
+  ```
+- client `client-ui-visual-aid/lib/client.js` 必须包含设置页同步逻辑：
+  ```js
+  syncEnabled
+  ```
+
+### 8. 实际发布前验证
+```bash
+cd /tmp/dsh-visual-aid
+# 检查版本
+grep -H '"version"' visual-aid/package.json client-ui-visual-aid/package.json bundle/package.json
+# 检查 patch
+cat bundle/cordis.patch.yml visual-aid/cordis.patch.yml
+# 检查 client ID
+grep -o "@sy008/dsh-client-ui-visual-aid\|@deepseek-ai/dsh-client-ui-visual-aid" client-ui-visual-aid/lib/client.js | sort | uniq -c
+# 实际打包
+(cd bundle && npm pack --pack-destination /tmp/check --cache /tmp/npm-cache-sy)
+(cd visual-aid && npm pack --pack-destination /tmp/check --cache /tmp/npm-cache-sy)
+(cd client-ui-visual-aid && npm pack --pack-destination /tmp/check --cache /tmp/npm-cache-sy)
+# 解压检查
+for tgz in /tmp/check/*.tgz; do tar -tzf "$tgz" | grep -E '\.map$|tsbuildinfo|node_modules|\.env|@deepseek-ai' && echo "FAIL $tgz" || echo "OK $tgz"; done
+```
+
+### 9. 发布顺序
+1. `git add -A && git commit && git tag v<新版本>`
+2. `git push origin main && git push origin v<新版本>`
+3. `npm publish` 顺序：visual-aid → client-ui-visual-aid → bundle
+4. `npm dist-tag add <pkg>@<新版本> next`（如果 latest 已通过 `--tag latest` 设置）
+5. 验证 dist-tags：`latest` 和 `next` 都指向新版本
+6. GitHub Release（Pre-release）
