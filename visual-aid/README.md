@@ -1,8 +1,8 @@
-# @deepseek-ai/dsh-visual-aid
+# @sy008/dsh-visual-aid
 
 `dsh-visual-aid` 的 Host 端包，提供运行时行为：图片收集、视觉模型委托、请求投影、工具、存储和分支继承。
 
-本包是 dsh 插件 bundle 的组成部分，通常与 `@deepseek-ai/dsh-client-ui-visual-aid` 一起通过薄 bundle 包安装。
+本包是 dsh 插件 bundle 的组成部分，通常与 `@sy008/dsh-client-ui-visual-aid` 一起通过薄 bundle 包安装。
 
 ## 功能
 
@@ -14,6 +14,8 @@
 - 提供“多模态伪装”开关，可让纯文本主模型通过模型切换检查（高风险，需配合本插件正常使用）。
 
 ## 使用
+
+关闭（`enabled=false`）即完全停用：不会继续图片转描述、不会投影、不会注册/保留视觉工具，设置页也会同步关闭。
 
 在 dsh Web 设置中启用，或使用：
 

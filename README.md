@@ -26,6 +26,7 @@ UNSUPPORTED_CONTENT
 - **`view_image` 工具**：让主模型向视觉模型追问编号图片。
 - **`visual_read_image` 工具**：通过插件自有路径读取磁盘图片文件。
 - **会话开关**：`/visual-aid on|off` 或 Web 顶部开关。
+- **关闭即完全停用**：从顶部选择“关闭”后，会同步关闭设置页中的“视觉辅助”，并且不再执行图片转描述、请求投影或 `view_image`/`visual_read_image`。
 - **设置界面**：在 dsh Web 设置中提供“视觉辅助 / Visual Aid”配置项。
 - **视觉对话面板**：展示图片问答历史、丢弃警告和 Token 统计。
 - **分支继承**：fork 出的新会话会继承父会话已生成的图片描述，避免分支后重复生成、浪费 Token。
@@ -55,7 +56,7 @@ packages/visual-aid/
 发布到 npm 后，可以通过 bundle 安装到 dsh profile：
 
 ```bash
-dsh plugin --profile web add @deepseek-ai/dsh-visual-aid-bundle
+dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.6
 ```
 
 本地开发时，可以打包后安装：
@@ -89,7 +90,7 @@ dsh plugin --profile web add file:/path/to/dsh-visual-aid-bundle
 从 npm 发布后安装：
 
 ```bash
-dsh plugin --profile web add @deepseek-ai/dsh-visual-aid-bundle
+dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.6
 ```
 
 使用本地 bundle 安装：
@@ -239,7 +240,7 @@ but this session already contains images; select an image-capable model.
 - 必要时删除 profile 下的 `pnpm-lock.yaml` 后重新安装。
 - 安装后确认版本：
   ```bash
-  grep '"version"' ~/.dsh/profiles/web/node_modules/@deepseek-ai/dsh-visual-aid/package.json
+  grep '"version"' ~/.dsh/profiles/web/node_modules/@sy008/dsh-visual-aid/package.json
   ```
 
 ### 6. `/compact` 是处理图片历史的推荐方式

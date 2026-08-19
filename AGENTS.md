@@ -54,6 +54,7 @@ packages/visual-aid/
 ## 重要行为
 
 - `enabled` 但没有配置视觉模型时，按“未启用”处理。
+- 关闭（`enabled=false`）时必须完全停用：`settleDescriptions` 和图片事件均先检查 `enabledFor`，顶部“关闭”与设置页“启用”保持同步；即使 provider/model 仍保留，也不得后台预处理。
 - 配置的视觉模型不可用或不接受图片时，只在请求确实包含图片时才会报错；纯文本请求正常放行。
 - 图片编号在压缩/compact 后保持单调递增。
 - 分支继承只在插件已安装时生效。如果插件被卸载，不会自动继承。
@@ -118,8 +119,8 @@ pnpm pack --pack-destination /tmp/va-final
 # 3. 创建 bundle 目录，包含 cordis.patch.yml 和 package.json：
 #    name: dsh-visual-aid-bundle
 #    dependencies:
-#      @deepseek-ai/dsh-visual-aid: file:/tmp/va-final/<host>.tgz
-#      @deepseek-ai/dsh-client-ui-visual-aid: file:/tmp/va-final/<client>.tgz
+#      @sy008/dsh-visual-aid: file:/tmp/va-final/<host>.tgz
+#      @sy008/dsh-client-ui-visual-aid: file:/tmp/va-final/<client>.tgz
 #    dsh.bundle.patch: ./cordis.patch.yml
 
 # 4. 安装到 profile
@@ -131,7 +132,7 @@ dsh plugin --profile web add file:/path/to/bundle
 - Host 和 client 包均已实现并有测试覆盖。
 - 分支继承已实现，并有回归测试。
 - 已验证本地打包 + profile 安装。
-- 尚未发布到公共 npm registry。
+- 已发布到公共 npm registry：`@sy008/dsh-visual-aid`、`@sy008/dsh-client-ui-visual-aid`、`@sy008/dsh-visual-aid-bundle`，当前版本 `0.1.0-rc.6`。
 
 ## 发布前检查
 
