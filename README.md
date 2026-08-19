@@ -51,6 +51,22 @@ packages/visual-aid/
     └── tests/
 ```
 
+## 界面预览
+
+安装并启用后，主要界面如下：
+
+### 顶部按钮
+
+![顶部视觉辅助按钮](docs/screenshots/chrome_wnLUWMSTPq.png)
+
+### 设置页
+
+![视觉辅助设置](docs/screenshots/chrome_J7xun3mo8S.png)
+
+### 视觉面板
+
+![视觉对话面板](docs/screenshots/chrome_vHEUoogLR3.png)
+
 ## 安装
 
 发布到 npm 后，可以通过 bundle 安装到 dsh profile：
