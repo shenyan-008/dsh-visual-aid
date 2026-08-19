@@ -132,7 +132,7 @@ dsh plugin --profile web add file:/path/to/bundle
 - Host 和 client 包均已实现并有测试覆盖。
 - 分支继承已实现，并有回归测试。
 - 已验证本地打包 + profile 安装。
-- 已发布到公共 npm registry：`@sy008/dsh-visual-aid`、`@sy008/dsh-client-ui-visual-aid`、`@sy008/dsh-visual-aid-bundle`，当前版本 `0.1.0-rc.7`。
+- 已发布到公共 npm registry：`@sy008/dsh-visual-aid`、`@sy008/dsh-client-ui-visual-aid`、`@sy008/dsh-visual-aid-bundle`，当前版本 `0.1.0-rc.8`。
 
 ## 发布前检查
 
