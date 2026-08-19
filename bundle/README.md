@@ -8,7 +8,7 @@ Thin dsh bundle that installs both:
 ## Install
 
 ```bash
-dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.6
+dsh plugin --profile web add @sy008/dsh-visual-aid-bundle@0.1.0-rc.7
 ```
 
 After installation, restart dsh and enable **Visual Aid** in settings.
