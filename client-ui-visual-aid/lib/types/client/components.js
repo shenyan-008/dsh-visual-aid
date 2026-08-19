@@ -73,14 +73,16 @@ export function VisualAidSection({ api, t }) {
     const [models, setModels] = useState([]);
     const [draft, setDraft] = useState({});
     useEffect(() => {
-        void (async () => {
-            try {
-                const [value, all] = await Promise.all([loadSettings(api), loadAllModels(api)]);
-                const enabled = value.enabled === true;
-                const provider = typeof value.provider === 'string' ? value.provider : '';
-                const model = typeof value.model === 'string' ? value.model : '';
-                setState(prev => ({ ...prev, loading: false, enabled, provider, model, revision: typeof value === 'object' ? value.revision ?? 0 : 0 }));
+        let cancelled = false;
+        const applyValue = (value, all, full = false) => {
+            const enabled = value.enabled === true;
+            const provider = typeof value.provider === 'string' ? value.provider : '';
+            const model = typeof value.model === 'string' ? value.model : '';
+            const revision = typeof value.revision === 'number' ? value.revision : 0;
+            setState(prev => ({ ...prev, loading: false, enabled, provider, model, revision, error: null }));
+            if (all !== undefined)
                 setModels(all);
+            if (full) {
                 setDraft({
                     enabled,
                     provider,
@@ -94,6 +96,8 @@ export function VisualAidSection({ api, t }) {
                 });
                 if (provider.length > 0 && model.length > 0) {
                     void loadModelInfo(provider, model).then((info) => {
+                        if (cancelled)
+                            return;
                         const max = info.maxTokens;
                         if (max !== undefined) {
                             setDraft(prev => ({
@@ -104,11 +108,46 @@ export function VisualAidSection({ api, t }) {
                         }
                     });
                 }
+                return;
+            }
+            // Keep the settings checkbox/model in lockstep with the top-bar close/open
+            // action without wiping unrelated in-progress form edits.
+            setDraft(prev => {
+                if (prev.enabled === enabled && prev.provider === provider && prev.model === model)
+                    return prev;
+                return { ...prev, enabled, provider, model };
+            });
+        };
+        const loadFull = async () => {
+            try {
+                const [value, all] = await Promise.all([loadSettings(api), loadAllModels(api)]);
+                if (cancelled)
+                    return;
+                applyValue(value, all, true);
             }
             catch (error) {
+                if (cancelled)
+                    return;
                 setState(prev => ({ ...prev, loading: false, error: error instanceof Error ? error.message : String(error) }));
             }
-        })();
+        };
+        const syncEnabled = async () => {
+            try {
+                const value = await loadSettings(api);
+                if (cancelled)
+                    return;
+                applyValue(value);
+            }
+            catch {
+                // Keep last good state on transient failures.
+            }
+        };
+        void loadFull();
+        const timer = setInterval(() => { void syncEnabled(); }, 2000);
+        return () => {
+            cancelled = true;
+            clearInterval(timer);
+        };
     }, [api]);
     const put = (key, value) => { setDraft(prev => ({ ...prev, [key]: value })); };
     const save = async () => {
@@ -129,7 +168,13 @@ export function VisualAidSection({ api, t }) {
                     patch[key] = Number(value);
             }
             await saveSettings(api, state.revision, patch);
-            setState(prev => ({ ...prev, saved: true }));
+            const value = await loadSettings(api);
+            const enabled = value.enabled === true;
+            const provider = typeof value.provider === 'string' ? value.provider : '';
+            const model = typeof value.model === 'string' ? value.model : '';
+            const revision = typeof value.revision === 'number' ? value.revision : state.revision;
+            setDraft(prev => ({ ...prev, enabled, provider, model }));
+            setState(prev => ({ ...prev, saved: true, enabled, provider, model, revision }));
         }
         catch (error) {
             setState(prev => ({ ...prev, saving: false, error: error instanceof Error ? error.message : String(error) }));
@@ -256,10 +301,14 @@ export function VisualAidToggle({ sessionId, api, t }) {
         }
     };
     const visionModels = models.filter(option => option.inputModalities === undefined || option.inputModalities.includes('image'));
-    const currentModel = visionModels.find(option => option.provider === settings.provider && option.model === settings.model);
-    const currentModelLabel = currentModel === undefined
-        ? (settings.model.length > 0 ? settings.model : t('modelEmpty'))
-        : `${currentModel.providerName} · ${currentModel.modelName}`;
+    const currentModel = settings.enabled
+        ? visionModels.find(option => option.provider === settings.provider && option.model === settings.model)
+        : undefined;
+    const currentModelLabel = !settings.enabled
+        ? t('statusOff')
+        : currentModel === undefined
+            ? (settings.model.length > 0 ? settings.model : t('modelEmpty'))
+            : `${currentModel.providerName} · ${currentModel.modelName}`;
     const currentEffortLabel = modelInfo?.reasoning?.efforts.find(effort => effort.id === settings.reasoningEffort)?.name ?? t('defaultEffort');
     const triggerLabel = status === 'describing'
         ? t('statusDescribing')
@@ -325,7 +374,9 @@ export function VisualAidToggle({ sessionId, api, t }) {
                         setOpen(true);
                     }
                 }, children: [_jsx("span", { className: css.vaTriggerLabel, children: triggerLabel }), _jsx("span", { className: css.vaChevron, children: open ? '▲' : '▼' })] }), open && (_jsxs("div", { className: css.vaMenu, role: "menu", style: menuPos === null ? undefined : { position: 'fixed', left: menuPos.left, bottom: menuPos.bottom, right: 'auto' }, children: [pane === 'root' && (_jsxs(_Fragment, { children: [_jsxs("button", { type: "button", className: css.vaCell, onClick: () => { setPane('model'); }, children: [_jsx("span", { children: t('model') }), _jsx("span", { className: css.vaCellValue, children: currentModelLabel }), _jsx("span", { className: css.vaCellChevron, children: "\u203A" })] }), modelInfo?.reasoning !== undefined && (_jsxs("button", { type: "button", className: css.vaCell, onClick: () => { setPane('effort'); }, children: [_jsx("span", { children: t('reasoningLevel') }), _jsx("span", { className: css.vaCellValue, children: currentEffortLabel }), _jsx("span", { className: css.vaCellChevron, children: "\u203A" })] })), contextTotal > 0 && (_jsxs("div", { className: css.vaContext, children: [_jsxs("div", { className: css.vaContextHeader, children: [_jsx("span", { children: t('contextUsed', { percent: contextPercent.toFixed(1) }) }), _jsxs("span", { children: ["~", contextUsed.toLocaleString(), " / ", contextTotal.toLocaleString()] })] }), _jsx("div", { className: css.vaContextBar, children: _jsx("div", { className: css.vaContextBarFill, style: { width: `${contextPercent}%` } }) }), _jsx("div", { className: css.vaContextBreakdown, children: _jsx("span", { children: t('officialContext', { value: recentApiInput.toLocaleString() }) }) }), _jsx("div", { className: css.vaContextModel, children: currentModelLabel })] })), sessionData !== null && (_jsxs("div", { className: css.vaDescribe, children: [_jsx("div", { className: css.vaDescribeTitle, children: t('describeTitle') }), _jsx("div", { className: css.vaDescribeRow, children: t('describeProcessed', { count: sessionData.stats.describeSteps ?? 0 }) }), _jsx("div", { className: css.vaDescribeRow, children: t('cumulativeStats', { input: describeInputText, output: describeOutputText, seconds: describeSeconds }) }), _jsx("div", { className: css.vaDescribeRow, children: t('latestStats', { input: describeLatestInput, output: describeLatestOutput, seconds: describeLatestSeconds }) })] })), sessionData !== null && (_jsxs("div", { className: css.vaDescribe, children: [_jsx("div", { className: css.vaDescribeTitle, children: t('qaTitle') }), _jsx("div", { className: css.vaDescribeRow, children: t('qaCount', { count: sessionData.stats.querySteps ?? 0 }) }), _jsx("div", { className: css.vaDescribeRow, children: t('cumulativeStats', { input: queryInputText, output: queryOutputText, seconds: querySeconds }) }), _jsx("div", { className: css.vaDescribeRow, children: t('latestStats', { input: queryLatestInput, output: queryLatestOutput, seconds: queryLatestSeconds }) })] }))] })), pane === 'model' && (_jsxs("div", { className: css.vaPane, children: [_jsxs("div", { className: css.vaMenuHeader, children: [_jsx("button", { type: "button", className: css.vaBack, onClick: () => { setPane('root'); }, children: t('back') }), _jsx("span", { children: t('model') })] }), _jsxs("div", { className: css.vaScroll, children: [_jsxs("button", { type: "button", className: css.vaOption, onClick: () => { void save({ enabled: false }); }, children: [_jsx("span", { children: t('close') }), !settings.enabled && _jsx("span", { className: css.vaCheck, children: "\u2713" })] }), visionModels.map((option) => {
-                                        const active = option.provider === settings.provider && option.model === settings.model;
+                                        const active = settings.enabled
+                                            && option.provider === settings.provider
+                                            && option.model === settings.model;
                                         return (_jsxs("button", { type: "button", className: css.vaOption, onClick: () => { void save({ enabled: true, provider: option.provider, model: option.model }); }, children: [_jsxs("span", { className: css.vaOptionCopy, children: [_jsx("span", { className: css.vaOptionName, children: option.modelName }), _jsx("span", { className: css.vaOptionDesc, children: option.providerName })] }), active && _jsx("span", { className: css.vaCheck, children: "\u2713" })] }, `${option.provider}/${option.model}`));
                                     })] })] })), pane === 'effort' && modelInfo?.reasoning !== undefined && (_jsxs("div", { className: css.vaPane, children: [_jsxs("div", { className: css.vaMenuHeader, children: [_jsx("button", { type: "button", className: css.vaBack, onClick: () => { setPane('root'); }, children: t('back') }), _jsx("span", { children: t('reasoningLevel') })] }), _jsxs("div", { className: css.vaScroll, children: [_jsxs("button", { type: "button", className: css.vaOption, onClick: () => { void save({ reasoningEffort: '' }); }, children: [_jsx("span", { children: t('defaultEffort') }), (settings.reasoningEffort === undefined || settings.reasoningEffort === '') && _jsx("span", { className: css.vaCheck, children: "\u2713" })] }), modelInfo.reasoning.efforts.map(effort => (_jsxs("button", { type: "button", className: css.vaOption, onClick: () => { void save({ reasoningEffort: effort.id }); }, children: [_jsx("span", { children: effort.name }), settings.reasoningEffort === effort.id && _jsx("span", { className: css.vaCheck, children: "\u2713" })] }, effort.id)))] })] }))] }))] }));
 }

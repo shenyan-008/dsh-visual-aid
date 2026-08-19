@@ -4,4 +4,4 @@ import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
 export const name = 'visual-aid-invariant'
 export const inject = ['invariants']
 const install: InvariantInstaller = () => {}
-export const apply = (ctx: Context): Promise<() => void> => Promise.resolve(ctx.invariants.register('@sy008/dsh-visual-aid', install))
+export const apply = (ctx: Context): Promise<() => void> => Promise.resolve(ctx.invariants.register('@deepseek-ai/dsh-visual-aid', install))

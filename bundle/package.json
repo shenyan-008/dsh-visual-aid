@@ -1,7 +1,7 @@
 {
   "name": "@sy008/dsh-visual-aid-bundle",
   "description": "Thin dsh bundle that installs the visual-aid host and web client together",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "type": "module",
   "private": false,
   "publishConfig": {
@@ -19,8 +19,8 @@
     }
   },
   "dependencies": {
-    "@sy008/dsh-client-ui-visual-aid": "^0.1.0-rc.5",
-    "@sy008/dsh-visual-aid": "^0.1.0-rc.5"
+    "@sy008/dsh-client-ui-visual-aid": "^0.1.0-rc.6",
+    "@sy008/dsh-visual-aid": "^0.1.0-rc.6"
   },
   "files": [
     "cordis.patch.yml"

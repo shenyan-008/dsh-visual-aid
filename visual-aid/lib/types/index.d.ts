@@ -2,7 +2,7 @@ import { Context, Service } from '@deepseek-ai/cordis';
 import type { Session } from '@deepseek-ai/dsh-session';
 import z from '@deepseek-ai/schemastery';
 import { type VisualAidConfig } from './config.ts';
-export declare const NAME = "@sy008/dsh-visual-aid";
+export declare const NAME = "@deepseek-ai/dsh-visual-aid";
 declare module '@deepseek-ai/cordis' {
     interface Context {
         visualAid: VisualAidService;

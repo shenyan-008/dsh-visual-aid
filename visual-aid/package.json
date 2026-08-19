@@ -1,7 +1,7 @@
 {
   "name": "@sy008/dsh-visual-aid",
   "description": "Installable visual-aid bundle: delegates image understanding to an existing multimodal model without changing the main driver",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shenyan-008/dsh-visual-aid.git",
@@ -44,17 +44,5 @@
     "@deepseek-ai/dsh-system-prompt": "^0.1.0-rc.5",
     "@deepseek-ai/dsh-timeout": "^0.1.0-rc.5",
     "@deepseek-ai/dsh-tools": "^0.1.0-rc.5"
-  },
-  "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-attachment": "workspace:^",
-    "@deepseek-ai/dsh-fs": "workspace:^",
-    "@deepseek-ai/dsh-host-webserver": "workspace:^",
-    "@deepseek-ai/dsh-llm": "workspace:^",
-    "@deepseek-ai/dsh-session": "workspace:^",
-    "@deepseek-ai/dsh-settings": "workspace:^",
-    "@deepseek-ai/dsh-system-prompt": "workspace:^",
-    "@deepseek-ai/dsh-timeout": "workspace:^",
-    "@deepseek-ai/dsh-tools": "workspace:^"
   }
 }

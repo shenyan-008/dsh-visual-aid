@@ -1,7 +1,7 @@
 {
   "name": "@sy008/dsh-client-ui-visual-aid",
   "description": "Visual-aid browser surfaces: settings section, session switch, and vision conversation panel",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shenyan-008/dsh-visual-aid.git",
@@ -57,20 +57,6 @@
     "@deepseek-ai/dsh-client-ui-settings": "^0.1.0-rc.5",
     "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.5",
     "@deepseek-ai/dsh-invariants": "^0.1.0-rc.5"
-  },
-  "devDependencies": {
-    "@deepseek-ai/cordis": "workspace:^",
-    "@deepseek-ai/dsh-api-remotes": "workspace:^",
-    "@deepseek-ai/dsh-client-locale": "workspace:^",
-    "@deepseek-ai/dsh-client-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-conversation": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-settings": "workspace:^",
-    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
-    "@deepseek-ai/dsh-client-web-react": "workspace:^",
-    "@deepseek-ai/dsh-invariants": "workspace:^",
-    "@types/react": "~18.3.1",
-    "@types/react-dom": "~18.3.0"
   },
   "license": "MIT",
   "publishConfig": {

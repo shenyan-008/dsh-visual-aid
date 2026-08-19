@@ -87,6 +87,22 @@ describe('pure visual-aid plugin', () => {
     await streamMain(h.ctx, h.session)
     expect(h.ctx.tools.get('view_image', undefined)).toBeUndefined()
     expect(h.main.seen[0]!.messages.some(m => m.content.some(b => b.type === 'image'))).toBe(true)
+    expect(h.vision.seen.length).toBe(0)
+  })
+
+  it('does not auto-describe images after the vision model is closed', async () => {
+    // Mirrors the UI "关闭" action: enabled=false while provider/model stay configured.
+    const h = await harness(false)
+    h.session.append('user/message', image('closed.png'), { surfaceOp: 'append' })
+    // Allow the session/event async describe path a chance to race if it were still live.
+    await new Promise(resolve => setTimeout(resolve, 50))
+    await streamMain(h.ctx, h.session)
+    expect(h.vision.seen.length).toBe(0)
+    const service = h.ctx.visualAid as unknown as {
+      settleDescriptions(session: typeof h.session): Promise<void>
+    }
+    await service.settleDescriptions(h.session)
+    expect(h.vision.seen.length).toBe(0)
   })
 
   it('treats enabled without a configured model as disabled', async () => {

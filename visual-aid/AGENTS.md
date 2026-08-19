@@ -1,4 +1,4 @@
-# AGENTS.md — @sy008/dsh-visual-aid（Host）
+# AGENTS.md — @deepseek-ai/dsh-visual-aid（Host）
 
 本文件是 `dsh-visual-aid` Host 端包的说明。权威开发指南见 `packages/visual-aid/AGENTS.md`。
 

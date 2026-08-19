@@ -29,7 +29,7 @@ import type { ImageRecord, VisualQa } from './channel.ts'
 
 const DEFAULT_MAX_RETRIES = 2
 
-export const NAME = '@sy008/dsh-visual-aid'
+export const NAME = '@deepseek-ai/dsh-visual-aid'
 const NS = settingsNamespace('visual-aid')
 
 declare module '@deepseek-ai/cordis' {
@@ -218,6 +218,7 @@ export default class VisualAidService extends Service {
         if (agent !== undefined) this.refreshAgentTools(agent)
       }
       if (event.type === 'user/message' || event.type === 'tool/result') {
+        if (!this.enabledFor(_session)) return
         const content = event.type === 'user/message'
           ? (event.data as { content: readonly import('@deepseek-ai/dsh-llm').ContentBlock[] }).content
           : (event.data as { message: { content: readonly import('@deepseek-ai/dsh-llm').ContentBlock[] } }).message.content
@@ -812,6 +813,10 @@ export default class VisualAidService extends Service {
     explicit?: { provider: string; model: string; defaultMaxTokens?: number; contextWindow?: number },
     signal?: AbortSignal,
   ): Promise<void> {
+    // Closing the vision model (enabled=false) must fully stop image preprocessing.
+    // provider/model are intentionally preserved in settings so the user can re-open
+    // the same model quickly; that must not keep describe running in the background.
+    if (!this.enabledFor(session)) return
     if (!this.current.describeImages) return
     const target = explicit ?? await this.resolveTarget(session, signal)
     if (target === undefined) return

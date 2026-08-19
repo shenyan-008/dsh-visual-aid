@@ -118,8 +118,8 @@ pnpm pack --pack-destination /tmp/va-final
 # 3. 创建 bundle 目录，包含 cordis.patch.yml 和 package.json：
 #    name: dsh-visual-aid-bundle
 #    dependencies:
-#      @sy008/dsh-visual-aid: file:/tmp/va-final/<host>.tgz
-#      @sy008/dsh-client-ui-visual-aid: file:/tmp/va-final/<client>.tgz
+#      @deepseek-ai/dsh-visual-aid: file:/tmp/va-final/<host>.tgz
+#      @deepseek-ai/dsh-client-ui-visual-aid: file:/tmp/va-final/<client>.tgz
 #    dsh.bundle.patch: ./cordis.patch.yml
 
 # 4. 安装到 profile

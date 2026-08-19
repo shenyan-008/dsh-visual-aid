@@ -64,7 +64,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { DEFAULT_MAX_TOKENS, DEFAULT_TIMEOUT_MS, VisualAidConfigSchema } from "./config.js";
 import { buildVisualRequest, collectImageRecords, DESCRIBE_PROMPT, DESCRIBE_SYSTEM, foldImageStates, substituteImages, VISUAL_SYSTEM, } from "./channel.js";
 const DEFAULT_MAX_RETRIES = 2;
-export const NAME = '@sy008/dsh-visual-aid';
+export const NAME = '@deepseek-ai/dsh-visual-aid';
 const NS = settingsNamespace('visual-aid');
 const IMAGE_EXTENSIONS = {
     '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif',
@@ -193,6 +193,8 @@ export default class VisualAidService extends Service {
                     this.refreshAgentTools(agent);
             }
             if (event.type === 'user/message' || event.type === 'tool/result') {
+                if (!this.enabledFor(_session))
+                    return;
                 const content = event.type === 'user/message'
                     ? event.data.content
                     : event.data.message.content;
@@ -763,6 +765,11 @@ export default class VisualAidService extends Service {
         this.saveSessionData(session);
     }
     async settleDescriptions(session, explicit, signal) {
+        // Closing the vision model (enabled=false) must fully stop image preprocessing.
+        // provider/model are intentionally preserved in settings so the user can re-open
+        // the same model quickly; that must not keep describe running in the background.
+        if (!this.enabledFor(session))
+            return;
         if (!this.current.describeImages)
             return;
         const target = explicit ?? await this.resolveTarget(session, signal);

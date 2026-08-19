@@ -1046,7 +1046,7 @@ var __disposeResources = (function(SuppressedError) {
 	return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 });
 const DEFAULT_MAX_RETRIES = 2;
-const NAME = "@sy008/dsh-visual-aid";
+const NAME = "@deepseek-ai/dsh-visual-aid";
 const NS = settingsNamespace("visual-aid");
 const IMAGE_EXTENSIONS = {
 	".png": "image/png",
@@ -1180,6 +1180,7 @@ var VisualAidService = class extends Service {
 				if (agent !== void 0) this.refreshAgentTools(agent);
 			}
 			if (event.type === "user/message" || event.type === "tool/result") {
+				if (!this.enabledFor(_session)) return;
 				if ((event.type === "user/message" ? event.data.content : event.data.message.content).some((block) => block.type === "image" || block.type === "tool-result" && block.content.some((inner) => inner.type === "image"))) this.settleDescriptions(_session, void 0, void 0);
 			}
 		});
@@ -1758,6 +1759,7 @@ var VisualAidService = class extends Service {
 		this.saveSessionData(session);
 	}
 	async settleDescriptions(session, explicit, signal) {
+		if (!this.enabledFor(session)) return;
 		if (!this.current.describeImages) return;
 		const target = explicit ?? await this.resolveTarget(session, signal);
 		if (target === void 0) return;

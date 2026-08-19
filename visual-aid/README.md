@@ -1,8 +1,8 @@
-# @sy008/dsh-visual-aid
+# @deepseek-ai/dsh-visual-aid
 
 `dsh-visual-aid` 的 Host 端包，提供运行时行为：图片收集、视觉模型委托、请求投影、工具、存储和分支继承。
 
-本包是 dsh 插件 bundle 的组成部分，通常与 `@sy008/dsh-client-ui-visual-aid` 一起通过薄 bundle 包安装。
+本包是 dsh 插件 bundle 的组成部分，通常与 `@deepseek-ai/dsh-client-ui-visual-aid` 一起通过薄 bundle 包安装。
 
 ## 功能
 

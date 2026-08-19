@@ -92,14 +92,15 @@ export function VisualAidSection({ api, t }: PropsRuntime<'settings.section'> & 
   const [draft, setDraft] = useState<Record<string, string | number | boolean>>({})
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const [value, all] = await Promise.all([loadSettings(api), loadAllModels(api)])
-        const enabled = value.enabled === true
-        const provider = typeof value.provider === 'string' ? value.provider : ''
-        const model = typeof value.model === 'string' ? value.model : ''
-        setState(prev => ({ ...prev, loading: false, enabled, provider, model, revision: typeof value === 'object' ? (value as { revision?: number }).revision ?? 0 : 0 }))
-        setModels(all)
+    let cancelled = false
+    const applyValue = (value: Record<string, unknown>, all?: ModelOption[], full = false): void => {
+      const enabled = value.enabled === true
+      const provider = typeof value.provider === 'string' ? value.provider : ''
+      const model = typeof value.model === 'string' ? value.model : ''
+      const revision = typeof value.revision === 'number' ? value.revision : 0
+      setState(prev => ({ ...prev, loading: false, enabled, provider, model, revision, error: null }))
+      if (all !== undefined) setModels(all)
+      if (full) {
         setDraft({
           enabled,
           provider,
@@ -113,6 +114,7 @@ export function VisualAidSection({ api, t }: PropsRuntime<'settings.section'> & 
         })
         if (provider.length > 0 && model.length > 0) {
           void loadModelInfo(provider, model).then((info) => {
+            if (cancelled) return
             const max = info.maxTokens
             if (max !== undefined) {
               setDraft(prev => ({
@@ -123,10 +125,43 @@ export function VisualAidSection({ api, t }: PropsRuntime<'settings.section'> & 
             }
           })
         }
+        return
+      }
+      // Keep the settings checkbox/model in lockstep with the top-bar close/open
+      // action without wiping unrelated in-progress form edits.
+      setDraft(prev => {
+        if (prev.enabled === enabled && prev.provider === provider && prev.model === model) return prev
+        return { ...prev, enabled, provider, model }
+      })
+    }
+
+    const loadFull = async (): Promise<void> => {
+      try {
+        const [value, all] = await Promise.all([loadSettings(api), loadAllModels(api)])
+        if (cancelled) return
+        applyValue(value, all, true)
       } catch (error) {
+        if (cancelled) return
         setState(prev => ({ ...prev, loading: false, error: error instanceof Error ? error.message : String(error) }))
       }
-    })()
+    }
+
+    const syncEnabled = async (): Promise<void> => {
+      try {
+        const value = await loadSettings(api)
+        if (cancelled) return
+        applyValue(value)
+      } catch {
+        // Keep last good state on transient failures.
+      }
+    }
+
+    void loadFull()
+    const timer = setInterval(() => { void syncEnabled() }, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
   }, [api])
 
   const put = (key: string, value: string | number | boolean): void => { setDraft(prev => ({ ...prev, [key]: value })) }
@@ -145,7 +180,13 @@ export function VisualAidSection({ api, t }: PropsRuntime<'settings.section'> & 
         if (typeof value === 'string' && value.length > 0) patch[key] = Number(value)
       }
       await saveSettings(api, state.revision, patch)
-      setState(prev => ({ ...prev, saved: true }))
+      const value = await loadSettings(api)
+      const enabled = value.enabled === true
+      const provider = typeof value.provider === 'string' ? value.provider : ''
+      const model = typeof value.model === 'string' ? value.model : ''
+      const revision = typeof value.revision === 'number' ? value.revision : state.revision
+      setDraft(prev => ({ ...prev, enabled, provider, model }))
+      setState(prev => ({ ...prev, saved: true, enabled, provider, model, revision }))
     } catch (error) {
       setState(prev => ({ ...prev, saving: false, error: error instanceof Error ? error.message : String(error) }))
     } finally {
@@ -338,10 +379,14 @@ export function VisualAidToggle({ sessionId, api, t }: PropsRuntime<'conversatio
   const visionModels = models.filter(option =>
     option.inputModalities === undefined || option.inputModalities.includes('image'))
 
-  const currentModel = visionModels.find(option => option.provider === settings.provider && option.model === settings.model)
-  const currentModelLabel = currentModel === undefined
-    ? (settings.model.length > 0 ? settings.model : t('modelEmpty'))
-    : `${currentModel.providerName} · ${currentModel.modelName}`
+  const currentModel = settings.enabled
+    ? visionModels.find(option => option.provider === settings.provider && option.model === settings.model)
+    : undefined
+  const currentModelLabel = !settings.enabled
+    ? t('statusOff')
+    : currentModel === undefined
+      ? (settings.model.length > 0 ? settings.model : t('modelEmpty'))
+      : `${currentModel.providerName} · ${currentModel.modelName}`
   const currentEffortLabel = modelInfo?.reasoning?.efforts.find(effort => effort.id === settings.reasoningEffort)?.name ?? t('defaultEffort')
   const triggerLabel = status === 'describing'
     ? t('statusDescribing')
@@ -504,7 +549,9 @@ export function VisualAidToggle({ sessionId, api, t }: PropsRuntime<'conversatio
                   {!settings.enabled && <span className={css.vaCheck}>✓</span>}
                 </button>
                 {visionModels.map((option) => {
-                  const active = option.provider === settings.provider && option.model === settings.model
+                  const active = settings.enabled
+                    && option.provider === settings.provider
+                    && option.model === settings.model
                   return (
                     <button
                       key={`${option.provider}/${option.model}`}

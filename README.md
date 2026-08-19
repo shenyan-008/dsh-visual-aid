@@ -55,7 +55,7 @@ packages/visual-aid/
 发布到 npm 后，可以通过 bundle 安装到 dsh profile：
 
 ```bash
-dsh plugin --profile web add @sy008/dsh-visual-aid-bundle
+dsh plugin --profile web add @deepseek-ai/dsh-visual-aid-bundle
 ```
 
 本地开发时，可以打包后安装：
@@ -89,7 +89,7 @@ dsh plugin --profile web add file:/path/to/dsh-visual-aid-bundle
 从 npm 发布后安装：
 
 ```bash
-dsh plugin --profile web add @sy008/dsh-visual-aid-bundle
+dsh plugin --profile web add @deepseek-ai/dsh-visual-aid-bundle
 ```
 
 使用本地 bundle 安装：
@@ -239,7 +239,7 @@ but this session already contains images; select an image-capable model.
 - 必要时删除 profile 下的 `pnpm-lock.yaml` 后重新安装。
 - 安装后确认版本：
   ```bash
-  grep '"version"' ~/.dsh/profiles/web/node_modules/@sy008/dsh-visual-aid/package.json
+  grep '"version"' ~/.dsh/profiles/web/node_modules/@deepseek-ai/dsh-visual-aid/package.json
   ```
 
 ### 6. `/compact` 是处理图片历史的推荐方式
